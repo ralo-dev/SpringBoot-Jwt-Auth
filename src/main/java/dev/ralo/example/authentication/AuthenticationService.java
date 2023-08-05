@@ -1,12 +1,16 @@
 package dev.ralo.example.authentication;
 
 import dev.ralo.example.jwt.JwtService;
+import dev.ralo.example.registration.RegistrationRequest;
+import dev.ralo.example.user.UserEntity;
+import dev.ralo.example.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -15,6 +19,7 @@ public class AuthenticationService {
 
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final UserService userService;
 
     public AuthenticationResponse authenticate(AuthenticationRequest authenticationRequest) {
         try {
@@ -44,6 +49,17 @@ public class AuthenticationService {
             log.error("Authentication failed: {}", e.getMessage());
             throw new RuntimeException("Error authenticating user", e);
         }
+    }
+
+    @Transactional
+    public void register(RegistrationRequest registrationRequest) {
+        //TODO: add validation logic which doesnt belong to the user service
+        userService.save(UserEntity.builder()
+                .username(registrationRequest.username())
+                .password(registrationRequest.password())
+                .role("ROLE_USER")
+                .build()
+        );
     }
 
 }
