@@ -20,13 +20,26 @@ public class WebConfiguration {
     private final AuthenticationProvider authenticationProvider;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    private final String[] AUTH_ADMIN = {
+            "/api/test/admin",
+    };
+    private final String[] AUTH_USER = {
+            "/api/test/user",
+    };
+    private final String[] AUTH_WHITELIST = {
+            "/api/test/all",
+            "/api/auth/**",
+    };
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(
                         authorize -> authorize
-                                .requestMatchers("/api/auth/**").permitAll()
+                                .requestMatchers(AUTH_WHITELIST).permitAll()
+                                .requestMatchers(AUTH_ADMIN).hasRole("ADMIN")
+                                .requestMatchers(AUTH_USER).hasRole("USER")
                                 .anyRequest().authenticated()
                 )
                 .sessionManagement(
